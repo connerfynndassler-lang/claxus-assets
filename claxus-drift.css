@@ -1,0 +1,84 @@
+/* ============================================================
+   CLAXUS — drifting starfield background
+   ------------------------------------------------------------
+   1. Upload claxus-star-tile.webp somewhere public
+      (SellAuth file/asset upload, or any CDN).
+   2. Paste its URL into --claxus-tile below.
+   3. Paste this whole file into your theme's Custom CSS.
+   No JavaScript, no extra HTML. GPU-composited transforms only.
+   ============================================================ */
+
+:root {
+  --claxus-tile: url('PASTE_YOUR_IMAGE_URL_HERE');
+  --t1: 900px;   /* tile size, near layer  */
+  --t2: 1500px;  /* tile size, far layer   */
+}
+
+/* Black base + the fixed light column from the top */
+body {
+  background-color: #000;
+  background-image: radial-gradient(
+    ellipse 62% 88% at 50% -4%,
+    rgba(214, 228, 255, 0.20) 0%,
+    rgba(255, 255, 255, 0.06) 45%,
+    transparent 72%
+  );
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+}
+
+/* Two star layers drifting at different speeds = parallax */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  pointer-events: none;
+  z-index: -1;
+  background-image: var(--claxus-tile);
+  background-repeat: repeat;
+  mix-blend-mode: screen;
+  will-change: transform;
+}
+
+body::before {
+  top: calc(-1 * var(--t1));
+  left: calc(-1 * var(--t1));
+  width: calc(100vw + 2 * var(--t1));
+  height: calc(100vh + 2 * var(--t1));
+  background-size: var(--t1) var(--t1);
+  animation: claxus-drift-1 150s linear infinite;
+}
+
+body::after {
+  top: calc(-1 * var(--t2));
+  left: calc(-1 * var(--t2));
+  width: calc(100vw + 2 * var(--t2));
+  height: calc(100vh + 2 * var(--t2));
+  background-size: var(--t2) var(--t2);
+  opacity: 0.55;
+  animation: claxus-drift-2 260s linear infinite;
+}
+
+/* Travel distance equals one tile, so the loop is invisible */
+@keyframes claxus-drift-1 {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(calc(-1 * var(--t1)), calc(-1 * var(--t1)), 0); }
+}
+
+@keyframes claxus-drift-2 {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(var(--t2), calc(-1 * var(--t2)), 0); }
+}
+
+/* Lighter on phones: one layer, slower */
+@media (max-width: 768px) {
+  body::after { display: none; }
+  body::before { animation-duration: 220s; }
+}
+
+/* Respect people who turn motion off at the OS level */
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after { animation: none; }
+}
